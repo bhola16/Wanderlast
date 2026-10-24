@@ -1,12 +1,12 @@
+import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { User } from "lucide-react";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/destinations", label: "Destinations" },
-  { href: "/bookings", label: "My Bookings" },
-  { href: "/admin", label: "Admin" },
+  { href: "/", label: "Home", active: true },
+  { href: "/destinations", label: "Destinations", active: false },
+  { href: "/add-destination", label: "Add Destination", active: false  },
+  { href: "/bookings", label: "My Bookings", active: false  },
 ];
 
 const authLinks = [
