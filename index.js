@@ -1,11 +1,13 @@
+import cors from "cors";
 import 'dotenv/config';
 import express from 'express';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const app = express()
 const PORT = 8000
 
-
+app.use(cors())
+app.use(express.json())
 
 const client = new MongoClient(process.env.MONGODB_URL);
 
@@ -19,14 +21,61 @@ export async function connectToMongoDB() {
   }
 }
 
-connectToMongoDB()
+
+const mongoClient = await connectToMongoDB()
+
+const db = mongoClient.db('wanderlast')
+const destinationCollection = db.collection("destination")
+
+
+
+app.post('/app-destination', async(req, res) =>{
+    const data = req.body
+    const result = await destinationCollection.insertOne(data)
+    res.send(result)
+})
+
+app.get('/destinations', async(req, res) =>{
+    const result = await destinationCollection.find().toArray()
+    res.send(result)
+})
+
+
+
+app.get('/destinations/:id', async(req, res) =>{
+    const {id} = req.params
+    const result = await destinationCollection.findOne({_id: new ObjectId(id)})
+
+    res.send(result)
+})
+
+
+
+app.patch('/destinations/:id', async(req, res) =>{
+    const {id} = req.params
+    const updatedData = req.body
+    const result = await destinationCollection.updateOne(
+        {_id: new ObjectId(id)},
+        {$set: updatedData}
+    )
+
+    res.json(result)
+})
+
+
+
+
+
+
+
+
+
+
 
 // http://localhost:8000/
 app.get('/', (req, res)=>{
     res.send({message: 'Server is running fine!' })
 })
-
-
 
 app.listen(PORT, ()=>{
     console.log(`Server is running at ${PORT}`)
