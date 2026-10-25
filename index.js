@@ -62,6 +62,14 @@ app.patch('/destinations/:id', async(req, res) =>{
     res.json(result)
 })
 
+app.delete('/destinations/:id', async(req, res) =>{
+    const {id} = req.params
+    const result = await destinationCollection.deleteOne({_id: new ObjectId(id)})
+
+    res.send(result)
+})
+
+
 
 
 
