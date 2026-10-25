@@ -1,12 +1,16 @@
+
+"use client";
+
 import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/", label: "Home", active: true },
-  { href: "/destinations", label: "Destinations", active: false },
-  { href: "/add-destination", label: "Add Destination", active: false  },
-  { href: "/bookings", label: "My Bookings", active: false  },
+  { href: "/", label: "Home" },
+  { href: "/destinations", label: "Destinations" },
+  { href: "/add-destination", label: "Add Destination" },
+  { href: "/bookings", label: "My Bookings" },
 ];
 
 const authLinks = [
@@ -16,23 +20,30 @@ const authLinks = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+
   return (
     <header className="w-full border-b border-black/5 bg-white">
-      <div className="relative flex h-16 w-full items-center justify-between px-6">
+      <div className="relative mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
         <nav className="hidden items-center gap-7 md:flex">
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={
-                href === "/"
-                  ? "text-sm font-medium text-[#3ab0cb] underline underline-offset-4"
-                  : "text-sm font-medium text-neutral-900 transition-colors hover:text-[#3ab0cb]"
-              }
-            >
-              {label}
-            </Link>
-          ))}
+          {navLinks.map(({ href, label }) => {
+            const isActive = pathname === href;
+
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={
+                  isActive
+                    ? "text-sm font-medium text-[#3ab0cb] underline underline-offset-4"
+                    : "text-sm font-medium text-neutral-900 transition-colors hover:text-[#3ab0cb]"
+                }
+                aria-current={isActive ? "page" : undefined}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
         <Link

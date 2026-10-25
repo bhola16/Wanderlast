@@ -1,5 +1,7 @@
 
-import EditDestinationDialog from "@/components/EditDestinationDialog";
+import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
+import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
+import { IDestination } from "@/type/Type";
 import {
     ArrowLeft,
     ArrowRight,
@@ -15,18 +17,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-interface Destination {
-    _id: string;
-    name: string;
-    country: string;
-    category: string;
-    price: string;
-    duration: string;
-    departureDate: string;
-    imageUrl: string;
-    description: string;
-    rating: number;
-}
+
 
 const DestinationDetailsPage = async ({
     params,
@@ -41,7 +32,7 @@ const DestinationDetailsPage = async ({
         throw new Error("Failed to fetch destination details");
     }
 
-    const data: Destination = await res.json();
+    const data: IDestination = await res.json();
 
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-8 md:px-8">
@@ -59,10 +50,8 @@ const DestinationDetailsPage = async ({
 
                     <div className="flex gap-3">
                         <EditDestinationDialog destination={data} />
-                        <button className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50">
-                            <X size={17} />
-                            Cancel
-                        </button>
+                        
+                        <DeleteDestinationDialog id={id}/>
                     </div>
                 </div>
 

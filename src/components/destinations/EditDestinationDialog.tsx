@@ -19,28 +19,18 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { IDestination } from "@/type/Type";
 import { Pencil, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
-interface Destination {
-  _id: string;
-  name: string;
-  country: string;
-  category: string;
-  price: string;
-  duration: string;
-  departureDate: string;
-  imageUrl: string;
-  description: string;
-  rating: number;
-}
+
 
 interface EditDestinationDialogProps {
-  destination: Destination;
+  destination: IDestination;
 }
 
-type DestinationFormData = Omit<Destination, "_id" | "rating">;
+type DestinationFormData = Omit<IDestination, "_id" | "rating">;
 
 const categories = [
   "Beach",
@@ -54,7 +44,7 @@ const categories = [
 const inputClass = "border-gray-300 focus-visible:ring-[#4dbdd8]";
 
 const initialForm = (
-  destination: Destination
+  destination: IDestination
 ): DestinationFormData => ({
   name: destination.name ?? "",
   country: destination.country ?? "",
@@ -274,7 +264,7 @@ const EditDestinationDialog = ({
             </div>
           </CardContent>
 
-          <CardFooter className="justify-end gap-2 border-t-0 bg-transparent px-0 pb-0">
+          <CardFooter className="justify-end mt-2 gap-2 border-t-0 bg-transparent px-0 pb-0">
             <button
               type="button"
               onClick={handleCancel}

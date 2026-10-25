@@ -14,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { display } from "@/lib/fonts";
 import { Save, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const categories = [
@@ -45,20 +46,25 @@ const AddDestinationPage = () => {
   const [formData, setFormData] = useState<FormState>(initialForm);
   const updateField = (field: keyof FormState, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
-
+    const router = useRouter();
+  
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+  
+    const res = await fetch("http://localhost:8000/app-destination", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-    const res = await fetch ("http://localhost:8000/app-destination", {
-        method: "POST",
-        headers:{
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData)
-    })
+    if (!res.ok) {
+      throw new Error("Failed to add travel package");
+    }
 
-    const data = await res.json()
-    console.log( data)
+    setFormData(initialForm);
+    router.refresh();
   };
 
   const handleCancel = () => setFormData(initialForm);

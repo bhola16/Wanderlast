@@ -1,25 +1,15 @@
-import DestinationCard from "@/components/DestinationCard";
+import DestinationCard from "@/components/destinations/DestinationCard";
+import { IDestination } from "@/type/Type";
 
-interface Destination {
-    _id: string;
-    name: string;
-    country: string;
-    category: string;
-    price: string;
-    duration: string;
-    departureDate: string;
-    imageUrl: string;
-    description: string;
-    rating: number;
-}
+
 
 const AllDestinationsPage = async () => {
     const res = await fetch("http://localhost:8000/destinations");
-    const data: Destination[] = await res.json();
+    const data: IDestination[] = await res.json();
     
 
     return (
-        <div className="p-6">
+        <div className="p-6 mx-auto max-w-7xl">
             {/* Heading Section */}
             <div className="mb-8 text-center">
                 <h1 className="mb-3 text-3xl font-bold">
