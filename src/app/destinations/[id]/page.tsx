@@ -20,10 +20,41 @@ const DestinationDetailsPage = async ({
 }) => {
   const { id } = await params;
 
-  const res = await fetch(`http://localhost:8000/destinations/${id}`);
+  const res = await fetch(
+    `http://localhost:8000/destinations/${id}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (res.status === 404) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Destination Not Found
+        </h1>
+
+        <p className="max-w-md text-gray-600">
+          This destination may have been deleted or does not exist.
+        </p>
+
+        <Link
+          href="/destinations"
+          className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+        >
+          <span className="flex items-center gap-2">
+            <ArrowLeft size={18} />
+            Back to Destinations
+          </span>
+        </Link>
+      </div>
+    );
+  }
 
   if (!res.ok) {
-    throw new Error("Failed to fetch destination details");
+    throw new Error(
+      `Failed to fetch destination details: ${res.status}`
+    );
   }
 
   const destination: IDestination = await res.json();
@@ -131,7 +162,8 @@ const DestinationDetailsPage = async ({
                     className="shrink-0 text-green-600"
                   />
                   <span>
-                    Explore the beautiful destination in {destination.country}
+                    Explore the beautiful destination in{" "}
+                    {destination.country}
                   </span>
                 </div>
 

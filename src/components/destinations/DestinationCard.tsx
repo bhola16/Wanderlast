@@ -46,6 +46,7 @@ const DestinationCard = ({ destination }: DestinationCardProps) => {
                     <MapPin size={16} className="text-blue-600" />
                     <span>{country}</span>
                 </div>
+                
 
                 {/* Name and Price */}
                 <div className="mb-4 flex items-start justify-between gap-3">
@@ -67,16 +68,16 @@ const DestinationCard = ({ destination }: DestinationCardProps) => {
                     <span>{duration}</span>
                 </div>
                 {/* Book Now */}
-<Link
-    href={`/destinations/${destination._id}`}
-    className="group flex w-full items-center justify-between rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
->
-    <span>BOOK NOW</span>
-    <ArrowRight
-        size={20}
-        className="transition-transform group-hover:translate-x-1"
-    />
-</Link>
+                <Link
+                    href={`/destinations/${destination._id}`}
+                    className="group flex w-full items-center justify-between rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
+                >
+                    <span>BOOK NOW</span>
+                    <ArrowRight
+                        size={20}
+                        className="transition-transform group-hover:translate-x-1"
+                    />
+                </Link>
                 
             </div>
         </div>
