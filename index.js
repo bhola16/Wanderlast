@@ -23,7 +23,6 @@ export async function connectToMongoDB() {
 
 
 const mongoClient = await connectToMongoDB()
-
 const db = mongoClient.db('wanderlast')
 const destinationCollection = db.collection("destination")
 const bookingCollection = db.collection("bookings")
@@ -69,11 +68,37 @@ app.delete('/destinations/:id', async(req, res) =>{
     res.send(result)
 })
 
-app.post("/bookings", async(req, res) =>{
-    const data = req.body
-    const result = await bookingCollection.insertOne(data)
-    res.send(result)
-})
+
+app.post("/bookings", async (req, res) => {
+  const data = req.body;
+
+  if (!data.userEmail || !data.destinationId || !data.departureDate) {
+    return res.status(400).json({
+      message: "Missing required booking information.",
+    });
+  }
+
+  // Check whether the user already has an active booking
+  const existingBooking = await bookingCollection.findOne({
+    userEmail: data.userEmail,
+    destinationId: data.destinationId,
+    status: { $in: ["pending", "confirmed"] },
+  });
+
+  if (existingBooking) {
+    return res.status(409).json({
+      message: "You have already booked this destination. Cancel your existing booking before booking again.",
+    });
+  }
+
+  const result = await bookingCollection.insertOne(data);
+
+  res.status(201).json({
+    message: "Booking created successfully!",
+    insertedId: result.insertedId,
+  });
+});
+
 
 
 app.get("/mybookings/:email", async(req, res) =>{
@@ -84,6 +109,37 @@ app.get("/mybookings/:email", async(req, res) =>{
     res.send(result)
 })
 
+app.delete("/mybookings/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const result = await bookingCollection.deleteOne({
+    _id: new ObjectId(id),
+  });
+  res.send(result);
+});
+
+
+app.get("/bookings/check", async (req, res) => {
+  const userEmail = req.query.userEmail;
+  const destinationId = req.query.destinationId;
+
+  if (
+    typeof userEmail !== "string" ||
+    typeof destinationId !== "string"
+  ) {
+    return res.status(400).json({
+      message: "User email and destination ID are required.",
+    });
+  }
+
+  const existingBooking = await bookingCollection.findOne({
+    userEmail,
+    destinationId,
+    status: { $in: ["pending", "confirmed"] },
+  });
+
+  res.json({ booked: Boolean(existingBooking) });
+});
 
 
 
