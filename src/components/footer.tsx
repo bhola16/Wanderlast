@@ -55,7 +55,7 @@ function ColumnHeading({ children }: { children: React.ReactNode }) {
 export default function Footer() {
   return (
     <footer className="bg-[#141414] px-6 pt-16 pb-8 text-white">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <p
           className={`${wordmark.className} text-6xl leading-none tracking-tight md:text-7xl`}
         >

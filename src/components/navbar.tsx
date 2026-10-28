@@ -1,26 +1,51 @@
 
 "use client";
 
-import { User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { authClient } from "@/lib/auth-client";
+import { UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/destinations", label: "Destinations" },
   { href: "/add-destination", label: "Add Destination" },
-  { href: "/bookings", label: "My Bookings" },
+  { href: "/mybookings", label: "My Bookings" },
 ];
 
-const authLinks = [
-  { href: "/profile", label: "Profile", icon: true },
-  { href: "/login", label: "Login", icon: false },
-  { href: "/signup", label: "Sign Up", icon: false },
+const guestLinks = [
+  { href: "/login", label: "Login" },
+  { href: "/signup", label: "Sign Up" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      // console.log("Sign out.......")
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
+  };
 
   return (
     <header className="w-full border-b border-black/5 bg-white">
@@ -62,16 +87,76 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          {authLinks.map(({ href, label, icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 transition-colors hover:text-[#3ab0cb]"
-            >
-              {icon && <User className="h-4 w-4" />}
-              {label}
-            </Link>
-          ))}
+          {user ? (
+            <>
+              <Link
+                href="/profile"
+                aria-current={pathname === "/profile" ? "page" : undefined}
+                className={
+                  pathname === "/profile"
+                    ? "flex items-center gap-1.5 text-sm font-medium text-[#3ab0cb]"
+                    : "flex items-center gap-1.5 text-sm font-medium text-neutral-900 transition-colors hover:text-[#3ab0cb]"
+                }
+              >
+                <UserRound className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label="Open user menu"
+                      className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#3ab0cb] focus-visible:ring-offset-2"
+                    >
+                      <Avatar>
+                        <AvatarImage
+                          src={user.image ?? undefined}
+                          alt={user.name ?? "User"}
+                          referrerPolicy="no-referrer"
+                        />
+                        <AvatarFallback>
+                          {user.name?.charAt(0) ?? "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  }
+                />
+
+                <PopoverContent>
+                  <PopoverHeader>
+                    <PopoverTitle>{user.name}</PopoverTitle>
+                    <PopoverDescription>
+                      {user.email}
+                    </PopoverDescription>
+                  </PopoverHeader>
+
+                  <div className="mt-3">
+                    <Button
+                      onClick={handleSignOut}
+                      variant="destructive"
+                      className="w-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          ) : (
+            <>
+              {guestLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-sm font-medium text-neutral-900 transition-colors hover:text-[#3ab0cb]"
+                >
+                  {label}
+                </Link>
+              ))}
+            </>
+          )}
         </div>
       </div>
     </header>

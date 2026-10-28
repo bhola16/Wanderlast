@@ -10,3 +10,17 @@ export interface IDestination {
     description: string;
     rating: number;
 }
+
+export interface IBooking {
+  _id: string;
+  userName: string;
+  userEmail: string;
+  userImage?: string;
+  destinationId: string;
+  destinationName: string;
+  country: string;
+  imageUrl: string;
+  price: number;
+  departureDate: string;
+  status: string;
+}
