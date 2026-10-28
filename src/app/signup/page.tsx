@@ -32,25 +32,38 @@ export default function SignUpPage() {
     "google" | "github" | null
   >(null);
 
-  const handleSocialSignUp = async (
-    provider: "google" | "github",
-  ) => {
-    if (isSubmitting || socialLoading) return;
 
-    setSocialLoading(provider);
+const handleSocialSignUp = async (
+  provider: "google" | "github",
+) => {
+  if (isSubmitting || socialLoading) return;
 
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: "/",
-        errorCallbackURL: "/signup",
-      });
-    } catch (err) {
-      console.error(`${provider} sign-up failed:`, err);
-      toast.error(`Unable to sign up with ${provider}. Please try again.`);
+  setSocialLoading(provider);
+
+  try {
+    const { data, error } = await authClient.signIn.social({
+      provider,
+      callbackURL: "/",
+      errorCallbackURL: "/signup",
+    });
+
+    if (error) {
+      console.error(`${provider} OAuth error:`, error);
+      toast.error(error.message || `Unable to sign up with ${provider}.`);
       setSocialLoading(null);
+      return;
     }
-  };
+
+    console.log(`${provider} OAuth response:`, data);
+  } catch (err) {
+    console.error(`${provider} sign-up failed:`, err);
+    toast.error(`Unable to sign up with ${provider}. Please try again.`);
+    setSocialLoading(null);
+  }
+};
+
+
+
 
   const handleEmailSignUp = async (
     e: FormEvent<HTMLFormElement>,
