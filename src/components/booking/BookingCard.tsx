@@ -4,27 +4,88 @@
 import { authClient } from "@/lib/auth-client";
 import { IDestination } from "@/type/Type";
 import {
-    ArrowRight,
-    CalendarDays,
-    CheckCircle2,
-    Clock,
-    Headset,
-    ShieldCheck,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Headset,
+  ShieldCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 interface BookingCardProps {
   destination: IDestination;
 }
 
 const BookingCard = ({ destination }: BookingCardProps) => {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [booked, setBooked] = useState(false);
+  const [checkingBooking, setCheckingBooking] = useState(true);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (isPending) return;
+
+    if (!user) {
+      setBooked(false);
+      setCheckingBooking(false);
+      setMessage("");
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkBooking = async () => {
+      setCheckingBooking(true);
+      setMessage("");
+
+      try {
+        const params = new URLSearchParams({
+          userEmail: user.email,
+          destinationId: destination._id,
+        });
+
+        const res = await fetch(
+          `http://localhost:8000/bookings/check?${params.toString()}`
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to check booking.");
+        }
+
+        const data: { booked: boolean } = await res.json();
+
+        if (!cancelled) {
+          setBooked(data.booked);
+
+          if (data.booked) {
+            setMessage(
+              "You have already booked this destination. Cancel your existing booking before booking again."
+            );
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setMessage("Unable to check your existing booking. Please try again.");
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingBooking(false);
+        }
+      }
+    };
+
+    void checkBooking();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isPending, destination._id]);
 
   const handleBooking = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,13 +96,17 @@ const BookingCard = ({ destination }: BookingCardProps) => {
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    const departureDate = formData.get("departureDate") as string;
+    if (booked || checkingBooking || loading) return;
 
-    if (!departureDate) {
+    const formData = new FormData(e.currentTarget);
+    const departureDate = formData.get("departureDate");
+
+    if (typeof departureDate !== "string" || !departureDate) {
       setMessage("Please select a departure date.");
       return;
     }
+
+    setLoading(true);
 
     const bookingData = {
       userName: user.name,
@@ -57,8 +122,8 @@ const BookingCard = ({ destination }: BookingCardProps) => {
       status: "pending",
     };
 
-    // console.log(bookingData);
-    const res = await fetch("http://localhost:8000/bookings", {
+    try {
+      const res = await fetch("http://localhost:8000/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,11 +131,30 @@ const BookingCard = ({ destination }: BookingCardProps) => {
         body: JSON.stringify(bookingData),
       });
 
-      const bookingRes = await res.json()
-      console.log(bookingRes);
+      const bookingRes: { message?: string } = await res.json();
 
-    
+      if (!res.ok) {
+        if (res.status === 409) {
+          setBooked(true);
+        }
+
+        setMessage(
+          bookingRes.message || "Booking failed. Please try again."
+        );
+        return;
+      }
+
+      setBooked(true);
+      setMessage("Your booking was successful!");
+    } catch {
+      setMessage("Unable to connect to the server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const buttonDisabled =
+    loading || booked || checkingBooking || isPending;
 
   return (
     <aside className="lg:sticky lg:top-6">
@@ -92,7 +176,6 @@ const BookingCard = ({ destination }: BookingCardProps) => {
         <div className="my-6 border-t border-gray-100" />
 
         <form onSubmit={handleBooking}>
-          {/* Departure Date */}
           <div className="mb-6">
             <label
               htmlFor="departureDate"
@@ -114,7 +197,8 @@ const BookingCard = ({ destination }: BookingCardProps) => {
                 min={new Date().toISOString().split("T")[0]}
                 defaultValue={destination.departureDate}
                 required
-                className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                disabled={buttonDisabled}
+                className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100"
               />
             </div>
           </div>
@@ -122,7 +206,9 @@ const BookingCard = ({ destination }: BookingCardProps) => {
           {message && (
             <p
               role="status"
-              className="mb-4 text-sm text-gray-700"
+              className={`mb-4 text-sm ${
+                booked ? "text-green-600" : "text-gray-700"
+              }`}
             >
               {message}
             </p>
@@ -132,15 +218,32 @@ const BookingCard = ({ destination }: BookingCardProps) => {
 
           <button
             type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={buttonDisabled}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              booked
+                ? "bg-gray-400"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            {loading ? "Submitting..." : "Book Now"}
-            {!loading && <ArrowRight size={19} />}
+            {isPending || checkingBooking
+              ? "Checking Booking..."
+              : loading
+                ? "Submitting..."
+                : booked
+                  ? "Already Booked"
+                  : "Book Now"}
+
+            {!loading &&
+              !checkingBooking &&
+              !isPending &&
+              (booked ? (
+                <CheckCircle2 size={19} />
+              ) : (
+                <ArrowRight size={19} />
+              ))}
           </button>
         </form>
 
-        {/* Booking Benefits */}
         <div className="mt-6 space-y-4">
           <div className="flex items-start gap-3">
             <CheckCircle2
