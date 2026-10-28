@@ -26,6 +26,7 @@ const mongoClient = await connectToMongoDB()
 
 const db = mongoClient.db('wanderlast')
 const destinationCollection = db.collection("destination")
+const bookingCollection = db.collection("bookings")
 
 
 
@@ -65,15 +66,23 @@ app.patch('/destinations/:id', async(req, res) =>{
 app.delete('/destinations/:id', async(req, res) =>{
     const {id} = req.params
     const result = await destinationCollection.deleteOne({_id: new ObjectId(id)})
+    res.send(result)
+})
 
+app.post("/bookings", async(req, res) =>{
+    const data = req.body
+    const result = await bookingCollection.insertOne(data)
     res.send(result)
 })
 
 
-
-
-
-
+app.get("/mybookings/:email", async(req, res) =>{
+    const {email} = req.params
+    const result = await bookingCollection.find(
+        {userEmail:email}).toArray()
+    
+    res.send(result)
+})
 
 
 
