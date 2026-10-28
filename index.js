@@ -17,14 +17,15 @@ export async function connectToMongoDB() {
     console.log("You successfully connected to MongoDB!");
     return client;
   } catch (err) {
-    console.dir(err);
+    console.error("MongoDB connection failed:", err);
+    throw err;
   }
 }
 
 
 const mongoClient = await connectToMongoDB()
-const db = mongoClient.db('wanderlast')
-const destinationCollection = db.collection("destination")
+const db = mongoClient.db('wander-last')
+const destinationCollection = db.collection("destinations")
 const bookingCollection = db.collection("bookings")
 
 
@@ -42,12 +43,16 @@ app.get('/destinations', async(req, res) =>{
 
 
 
-app.get('/destinations/:id', async(req, res) =>{
-    const {id} = req.params
-    const result = await destinationCollection.findOne({_id: new ObjectId(id)})
+app.get("/destinations/:id", async (req, res) => {
+  const { id } = req.params;
 
-    res.send(result)
-})
+  const destination = await destinationCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  res.send(destination);
+});
+
 
 
 
@@ -140,9 +145,6 @@ app.get("/bookings/check", async (req, res) => {
 
   res.json({ booked: Boolean(existingBooking) });
 });
-
-
-
 
 
 // http://localhost:8000/
