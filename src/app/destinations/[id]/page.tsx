@@ -2,6 +2,8 @@
 import BookingCard from "@/components/booking/BookingCard";
 import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
 import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
+import { auth } from "@/lib/auth";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import { IDestination } from "@/type/Type";
 import {
   ArrowLeft,
@@ -10,6 +12,7 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,10 +22,14 @@ const DestinationDetailsPage = async ({
   params: Promise<{ id: string }>;
 }) => {
   const { id } = await params;
+  const token = await getTokenFromServer();
 
   const res = await fetch(
     `http://localhost:8000/destinations/${id}`,
     {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
       cache: "no-store",
     }
   );

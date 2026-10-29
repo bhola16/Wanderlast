@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { IDestination } from "@/type/Type";
 import { Pencil, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -96,6 +97,9 @@ const EditDestinationDialog = ({
 
     setLoading(true);
 
+    const token = await getTokenFromClient();
+
+
     try {
       const res = await fetch(
         `http://localhost:8000/destinations/${destination._id}`,
@@ -103,6 +107,7 @@ const EditDestinationDialog = ({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
             ...formData,

@@ -34,3 +34,13 @@ export interface IUser {
  name: string;
  image?: string | null | undefined;
 } 
+
+export interface IFeaturedDestination {
+  _id: string;
+  name: string;
+  country: string;
+  category: string;
+  price: string | number;
+  duration: string;
+  imageUrl: string;
+}

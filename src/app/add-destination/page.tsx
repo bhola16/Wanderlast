@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { authClient } from "@/lib/auth-client";
 import { display } from "@/lib/fonts";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -50,11 +52,15 @@ const AddDestinationPage = () => {
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  
-    const res = await fetch("http://localhost:8000/app-destination", {
+
+    const token = await getTokenFromClient();
+
+
+    const res = await fetch("http://localhost:8000/add-destination", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(formData),
     });
