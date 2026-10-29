@@ -1,6 +1,7 @@
 import cors from "cors";
 import 'dotenv/config';
 import express from 'express';
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { MongoClient, ObjectId } from 'mongodb';
 
 const app = express()
@@ -28,9 +29,36 @@ const db = mongoClient.db('wander-last')
 const destinationCollection = db.collection("destinations")
 const bookingCollection = db.collection("bookings")
 
+const verifyToken = async (req, res, next) => {
+
+  const authHeader = req.headers.authorization
+  // console.log(authHeader);
+
+  if(!authHeader){
+    return res.status(401).send({msg: "Unauthorized"})
+  }
 
 
-app.post('/app-destination', async(req, res) =>{
+  const token = authHeader.split(" ")[1]
+  // console.log(token);
+  if(!token){
+    return res.status(401).send({msg: "Unauthorized....."})
+  }
+
+  const JWKS = createRemoteJWKSet(new URL('http://localhost:3000/api/auth/jwks'))
+  
+  try{
+    const {payload} = await jwtVerify (token, JWKS)
+    // console.log(payload)
+    next()
+  } catch (error) {
+    return res.status(500).send({msg: "Server Error....."})
+  }
+  
+}
+
+
+app.post('/add-destination', verifyToken, async(req, res) =>{
     const data = req.body
     const result = await destinationCollection.insertOne(data)
     res.send(result)
@@ -41,11 +69,15 @@ app.get('/destinations', async(req, res) =>{
     res.send(result)
 })
 
+app.get('/featured-destinations', async(req, res) =>{
+    const result = await destinationCollection.find().limit(5).toArray()
+    res.send(result)
+})
 
 
-app.get("/destinations/:id", async (req, res) => {
+app.get("/destinations/:id", verifyToken, async (req, res) => {
+
   const { id } = req.params;
-
   const destination = await destinationCollection.findOne({
     _id: new ObjectId(id),
   });
@@ -54,9 +86,7 @@ app.get("/destinations/:id", async (req, res) => {
 });
 
 
-
-
-app.patch('/destinations/:id', async(req, res) =>{
+app.patch('/destinations/:id', verifyToken, async(req, res) =>{
     const {id} = req.params
     const updatedData = req.body
     const result = await destinationCollection.updateOne(
@@ -67,7 +97,7 @@ app.patch('/destinations/:id', async(req, res) =>{
     res.json(result)
 })
 
-app.delete('/destinations/:id', async(req, res) =>{
+app.delete('/destinations/:id', verifyToken, async(req, res) =>{
     const {id} = req.params
     const result = await destinationCollection.deleteOne({_id: new ObjectId(id)})
     res.send(result)
@@ -114,7 +144,7 @@ app.get("/mybookings/:email", async(req, res) =>{
     res.send(result)
 })
 
-app.delete("/mybookings/:id", async (req, res) => {
+app.delete("/mybookings/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   const result = await bookingCollection.deleteOne({
