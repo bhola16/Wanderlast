@@ -2,6 +2,8 @@
 import DestinationCard from "@/components/destinations/DestinationCard";
 import { IDestination } from "@/type/Type";
 
+export const dynamic = "force-dynamic";
+
 const AllDestinationsPage = async () => {
     let data: IDestination[] = [];
     let apiError = false;

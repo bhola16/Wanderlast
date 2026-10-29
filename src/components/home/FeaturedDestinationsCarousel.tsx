@@ -57,7 +57,7 @@ const FeaturedDestinationsCarousel = ({
     });
 
     setCurrent(bestIndex);
-    }, []);
+}, []);
 
   const handleScroll = useCallback(
     (direction: "left" | "right") => {

@@ -35,7 +35,9 @@ export interface IUser {
  image?: string | null | undefined;
 } 
 
+
 export interface IFeaturedDestination {
+  // Keep your existing properties
   _id: string;
   name: string;
   country: string;
@@ -43,4 +45,7 @@ export interface IFeaturedDestination {
   price: string | number;
   duration: string;
   imageUrl: string;
+
+  // Add this property
+  rating?: number;
 }

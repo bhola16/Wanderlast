@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { authClient } from "@/lib/auth-client";
 import { display } from "@/lib/fonts";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { Save, Trash2 } from "lucide-react";
@@ -44,36 +44,96 @@ type FormState = typeof initialForm;
 const inputClass = "border-transparent bg-muted";
 
 const AddDestinationPage = () => {
+  const router = useRouter();
 
   const [formData, setFormData] = useState<FormState>(initialForm);
-  const updateField = (field: keyof FormState, value: string) =>
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const updateField = (field: keyof FormState, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    const router = useRouter();
-  
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const token = await getTokenFromClient();
-
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/add-destination`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(formData),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to add travel package");
-    }
-
-    setFormData(initialForm);
-    router.refresh();
+    setMessage("");
   };
 
-  const handleCancel = () => setFormData(initialForm);
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setIsSubmitting(true);
+    setMessage("");
+    setIsSuccess(false);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_SERVER_API_URL;
+
+      if (!apiUrl) {
+        throw new Error("Server API URL is not configured.");
+      }
+
+      const token = await getTokenFromClient();
+
+      if (!token) {
+        throw new Error("No authentication token found. Please sign in again.");
+      }
+
+      const res = await fetch(`${apiUrl}/add-destination`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const responseText = await res.text();
+      let result: { message?: string; msg?: string; error?: string } | null =
+        null;
+
+      try {
+        result = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        // The API response was not JSON.
+      }
+
+      if (!res.ok) {
+        console.error("Add destination failed:", {
+          status: res.status,
+          response: responseText,
+        });
+
+        throw new Error(
+          result?.message ||
+            result?.msg ||
+            result?.error ||
+            `Failed to add travel package (HTTP ${res.status}).`
+        );
+      }
+
+      setIsSuccess(true);
+      setMessage("Travel package added successfully!");
+      setFormData(initialForm);
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error adding destination:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData(initialForm);
+    setMessage("");
+    setIsSuccess(false);
+  };
 
   return (
     <main className="flex-1 bg-white px-4 py-10 md:px-6 md:py-14">
@@ -105,9 +165,12 @@ const AddDestinationPage = () => {
                   <Input
                     id="country"
                     value={formData.country}
-                    onChange={(e) => updateField("country", e.target.value)}
+                    onChange={(e) =>
+                      updateField("country", e.target.value)
+                    }
                     placeholder="Indonesia"
                     className={inputClass}
+                    required
                   />
                 </div>
 
@@ -119,9 +182,13 @@ const AddDestinationPage = () => {
                       updateField("category", value ?? "")
                     }
                   >
-                    <SelectTrigger id="category" className={`w-full ${inputClass}`}>
+                    <SelectTrigger
+                      id="category"
+                      className={`w-full ${inputClass}`}
+                    >
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
+
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category} value={category}>
@@ -139,9 +206,12 @@ const AddDestinationPage = () => {
                     type="number"
                     min={0}
                     value={formData.price}
-                    onChange={(e) => updateField("price", e.target.value)}
+                    onChange={(e) =>
+                      updateField("price", e.target.value)
+                    }
                     placeholder="e.g., 1299"
                     className={inputClass}
+                    required
                   />
                 </div>
 
@@ -150,9 +220,12 @@ const AddDestinationPage = () => {
                   <Input
                     id="duration"
                     value={formData.duration}
-                    onChange={(e) => updateField("duration", e.target.value)}
+                    onChange={(e) =>
+                      updateField("duration", e.target.value)
+                    }
                     placeholder="e.g., 7 Days/6 Nights"
                     className={inputClass}
+                    required
                   />
                 </div>
               </div>
@@ -167,6 +240,7 @@ const AddDestinationPage = () => {
                     updateField("departureDate", e.target.value)
                   }
                   className={inputClass}
+                  required
                 />
               </div>
 
@@ -176,9 +250,12 @@ const AddDestinationPage = () => {
                   id="image-url"
                   type="url"
                   value={formData.imageUrl}
-                  onChange={(e) => updateField("imageUrl", e.target.value)}
+                  onChange={(e) =>
+                    updateField("imageUrl", e.target.value)
+                  }
                   placeholder="https://example.com/image.jpg"
                   className={inputClass}
+                  required
                 />
               </div>
 
@@ -187,29 +264,47 @@ const AddDestinationPage = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => updateField("description", e.target.value)}
+                  onChange={(e) =>
+                    updateField("description", e.target.value)
+                  }
                   placeholder="Describe the travel experience..."
                   className={`min-h-32 ${inputClass}`}
+                  required
                 />
               </div>
             </CardContent>
+
+            {message && (
+              <p
+                role="status"
+                aria-live="polite"
+                className={`px-6 pb-4 text-sm ${
+                  isSuccess ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {message}
+              </p>
+            )}
 
             <CardFooter className="justify-end gap-2 border-t-0 bg-transparent">
               <Button
                 type="button"
                 variant="destructive"
                 onClick={handleCancel}
+                disabled={isSubmitting}
                 className="border border-destructive bg-transparent hover:bg-destructive/10"
               >
                 <Trash2 />
                 Cancel
               </Button>
+
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="bg-[#4dbdd8] text-white hover:bg-[#3ab0cb]"
               >
                 <Save />
-                Add Travel Package
+                {isSubmitting ? "Adding..." : "Add Travel Package"}
               </Button>
             </CardFooter>
           </form>

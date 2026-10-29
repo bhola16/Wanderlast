@@ -1,4 +1,3 @@
-
 import { IFeaturedDestination } from "@/type/Type";
 import Link from "next/link";
 import FeaturedDestinationsCarousel from "./FeaturedDestinationsCarousel";
