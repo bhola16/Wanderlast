@@ -3,18 +3,17 @@ import MyBookingsCard from "@/components/booking/MyBookingsCard";
 import { auth } from "@/lib/auth";
 import { IBooking } from "@/type/Type";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 
 const MyBookingsPage = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  const user = session?.user;
-
-  if (!user) {
-    redirect("/login");
+  if (!session?.user) {
+    return null;
   }
+
+  const user = session.user;
 
   const res = await fetch(
     `http://localhost:8000/mybookings/${encodeURIComponent(user.email)}`,
@@ -35,6 +34,7 @@ const MyBookingsPage = async () => {
         <h1 className="text-3xl font-bold text-gray-900">
           My Bookings
         </h1>
+
         <p className="mt-2 text-gray-500">
           Manage and view your upcoming travel plans.
         </p>
@@ -45,6 +45,7 @@ const MyBookingsPage = async () => {
           <h2 className="text-lg font-semibold text-gray-800">
             No bookings yet
           </h2>
+
           <p className="mt-2 text-sm text-gray-500">
             Your travel bookings will appear here.
           </p>
