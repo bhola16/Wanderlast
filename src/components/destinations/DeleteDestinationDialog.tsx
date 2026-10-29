@@ -26,7 +26,7 @@ const DeleteDestinationDialog = ({ id }:{id:string}) => {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/destinations/${id}`,
+        `${process.env.NEXT_PUBLIC_SERVER_API_URL}/destinations/${id}`,
         {
           method: "DELETE",
           headers: {

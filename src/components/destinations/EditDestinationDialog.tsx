@@ -102,7 +102,7 @@ const EditDestinationDialog = ({
 
     try {
       const res = await fetch(
-        `http://localhost:8000/destinations/${destination._id}`,
+        `${process.env.NEXT_PUBLIC_SERVER_API_URL}/destinations/${destination._id}`,
         {
           method: "PATCH",
           headers: {

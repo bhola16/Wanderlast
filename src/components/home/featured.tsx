@@ -1,14 +1,14 @@
 
 import { IFeaturedDestination } from "@/type/Type";
-import FeaturedDestinationsCarousel from "./FeaturedDestinationsCarousel";
 import Link from "next/link";
+import FeaturedDestinationsCarousel from "./FeaturedDestinationsCarousel";
 
 const FeaturedPage = async () => {
   let destinations: IFeaturedDestination[] = [];
 
   try {
     const res = await fetch(
-      "http://localhost:8000/featured-destinations",
+      `${process.env.NEXT_PUBLIC_SERVER_API_URL}/featured-destinations`,
       {
         cache: "no-store",
       }
