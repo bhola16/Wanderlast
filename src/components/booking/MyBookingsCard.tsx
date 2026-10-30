@@ -1,6 +1,7 @@
 
 "use client";
 
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { IBooking } from "@/type/Type";
 import { CalendarDays, Eye, XCircle } from "lucide-react";
 import Image from "next/image";
@@ -14,11 +15,17 @@ interface MyBookingsCardProps {
 const MyBookingsCard = ({ booking }: MyBookingsCardProps) => {
   const router = useRouter();
 
+  
   const handleCancelBooking = async () => {
+    const token = await getTokenFromClient ();
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_API_URL}/mybookings/${booking._id}`,
       {
         method: "DELETE",
+        headers: {
+          authorization: `BearerCancel ${token}`,
+        },
       }
     );
 

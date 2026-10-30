@@ -2,7 +2,6 @@
 import BookingCard from "@/components/booking/BookingCard";
 import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
 import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
-import { auth } from "@/lib/auth";
 import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import { IDestination } from "@/type/Type";
 import {
@@ -12,7 +11,6 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
-import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,17 +20,28 @@ const DestinationDetailsPage = async ({
   params: Promise<{ id: string }>;
 }) => {
   const { id } = await params;
+
+
   const token = await getTokenFromServer();
+  
+
+  if (!token) {
+    throw new Error("JWT token not found. Please log in again.");
+  }
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SERVER_API_URL}/destinations/${id}`,
     {
       headers: {
-        authorization: `Bearer ${token}`,
+        Authorization: `BearerDes ${token}`,
       },
       cache: "no-store",
     }
   );
+
+  
+
+
 
   if (res.status === 404) {
     return (

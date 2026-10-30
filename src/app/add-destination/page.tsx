@@ -57,7 +57,7 @@ const AddDestinationPage = () => {
   };
 
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
+    event: React.SubmitEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
@@ -82,7 +82,7 @@ const AddDestinationPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          authorization: `BearerAdd ${token}`,
         },
         body: JSON.stringify(formData),
       });

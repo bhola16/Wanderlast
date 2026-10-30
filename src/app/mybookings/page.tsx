@@ -2,6 +2,7 @@
 import MyBookingsCard from "@/components/booking/MyBookingsCard";
 import { auth } from "@/lib/auth";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import { IBooking } from "@/type/Type";
 import { headers } from "next/headers";
 
@@ -19,14 +20,9 @@ const MyBookingsPage = async () => {
   let apiError = false;
 
   try {
-    const token = await getTokenFromClient();
-
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_API_URL}/mybookings/${encodeURIComponent(user.email)}`,
       {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
         cache: "no-store",
       }
     );

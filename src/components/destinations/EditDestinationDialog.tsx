@@ -107,7 +107,7 @@ const EditDestinationDialog = ({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`
+            authorization: `BearerEdit ${token}`
           },
           body: JSON.stringify({
             ...formData,
@@ -126,7 +126,7 @@ const EditDestinationDialog = ({
 }
 
       setOpen(false);
-      router.refresh();
+      // router.refresh();
     } catch (error) {
       console.error("Error updating destination:", error);
       alert("Failed to update destination. Please try again.");

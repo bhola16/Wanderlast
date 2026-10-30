@@ -2,20 +2,20 @@
 "use client";
 
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
-import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const DeleteDestinationDialog = ({ id }:{id:string}) => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const DeleteDestinationDialog = ({ id }:{id:string}) => {
         {
           method: "DELETE",
           headers: {
-            authorization: `Bearer ${token}`
+            authorization: `BearerDelete ${token}`
           },
         }
       );
