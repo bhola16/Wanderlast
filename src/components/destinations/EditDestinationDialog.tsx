@@ -126,7 +126,7 @@ const EditDestinationDialog = ({
 }
 
       setOpen(false);
-      // router.refresh();
+      router.refresh();
     } catch (error) {
       console.error("Error updating destination:", error);
       alert("Failed to update destination. Please try again.");
